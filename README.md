@@ -2,7 +2,11 @@
 
 使用 react-hooks 简单实现类似 redux 的功能。其中包括对异步 action 的处理，使用方式类似 redux-thunk
 
-# 参数说明
+使用 `useMemo`，防止不必要的子组件渲染
+
+重新封装 `dispatch` 实现类似 redux-thunk 的功能
+
+# 使用说明
 
 - Context : 全局共享的 Context
 
@@ -12,7 +16,7 @@
   const { state, dispatch } = useContext(Context)
   ```
 
-- Provider : 包裹需要共享 state 的所有组件，接收一个 reducer、initState（可选，默认值）、init（可选，默认值的处理函数）
+- Provider : 包裹需要共享 state 的所有组件，接收一个 reducer
 
   ```js
   import React from 'react'
@@ -25,8 +29,7 @@
 
   // 目前 reducers 支持以下两种写法
   // 第一种 useReducer 默认写法
-  // 第一种写法需要出入默认值  initState 或者 init
-  function reducer(state, action) {
+  function reducer(state = { A: 1, B: 2 }, action) {
     switch (action.type) {
       case 'AAA':
         return { ...state, A: action.data }
@@ -38,7 +41,6 @@
   }
 
   // 第二种写法
-  // 直接指定默认值，无需指定 initState 或则 init
   export const A = (state = 1, action) => {
     if (action.type === 'AAA') {
       return action.data
@@ -54,32 +56,29 @@
   }
   ```
 
-- createState : 将 state 重新映射，接收一个函数，这个函数接收参数 state，这个函数返回一个新的 state 对象。整个方法返回一个 mapStateToProps 函数
-- createDispatch : 将 dispath 重新映射，接收一个函数，这个函数接收参数 dispath，这个函数返回一个新的 dispath 函数对象。整个方法返回一个 mapDispatchToProps 函数
-- useConnct : 将 mapStateToProps 和 mapDispatchToProps 映射到 props
+- useConnct : 将 state 和 action 映射到 props
 
   ```js
   import React from 'react'
-  import { createState, createDispatch, useConnct } from './react-hooks-redux'
-  import { dispatchA, dispatchA1 } from './actions'
-
-  const mapStateToProps = createState(state => {
-    return {
-      A: state.A,
-      A1: state.A1.toJS()
-    }
-  })
-
-  const mapDispatchToProps = createDispatch(dispatch => ({ 
-    dispatchA: data => dispatch(dispatchA(data)),
-    dispatchA1: data => dispatch(dispatchA1(data))
-  }))
+  import { useConnct } from './react-hooks-redux'
+  import { dispatchA, dispatchA1, dispatchAGetData } from './actions'
 
   function A(props) {
-    const { A, A1, dispatchA, dispatchA1 } = props
-
+    const { count, A, A1, dispatchA, dispatchA1, dispatchAGetData } = props
     return <div>123</div>
   }
 
-  export default useConnct(mapStateToProps, mapDispatchToProps)(A)
+  export default useConnct(
+    state => {
+      return {
+        A: state.A,
+        A1: state.A1.toJS()
+      }
+    },
+    dispatch => ({
+      dispatchA: data => dispatch(dispatchA(data)),
+      dispatchA1: data => dispatch(dispatchA1(data)),
+      dispatchAGetData: data => dispatch(dispatchAGetData(data))
+    })
+  )(A)
   ```

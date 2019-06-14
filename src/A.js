@@ -1,19 +1,6 @@
 import React from 'react'
-import { createState, createDispatch, useConnct } from './react-hooks-redux'
+import { useConnct } from './react-hooks-redux'
 import { dispatchA, dispatchA1, dispatchAGetData } from './actions'
-
-const mapStateToProps = createState(state => {
-  return {
-    A: state.A,
-    A1: state.A1.toJS()
-  }
-})
-
-const mapDispatchToProps = createDispatch(dispatch => ({
-  dispatchA: data => dispatch(dispatchA(data)),
-  dispatchA1: data => dispatch(dispatchA1(data)),
-  dispatchAGetData: data => dispatch(dispatchAGetData(data))
-}))
 
 function A(props) {
   const { count, A, A1, dispatchA, dispatchA1, dispatchAGetData } = props
@@ -43,4 +30,16 @@ function A(props) {
   )
 }
 
-export default useConnct(mapStateToProps, mapDispatchToProps)(A)
+export default useConnct(
+  state => {
+    return {
+      A: state.A,
+      A1: state.A1.toJS()
+    }
+  },
+  dispatch => ({
+    dispatchA: data => dispatch(dispatchA(data)),
+    dispatchA1: data => dispatch(dispatchA1(data)),
+    dispatchAGetData: data => dispatch(dispatchAGetData(data))
+  })
+)(A)

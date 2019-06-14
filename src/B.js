@@ -2,7 +2,6 @@ import React, { useContext } from 'react'
 import { Context } from './react-hooks-redux'
 
 function B() {
-  console.log(Context)
   const { state, dispatch } = useContext(Context)
   const { B } = state
   return (
