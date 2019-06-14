@@ -1,15 +1,15 @@
 import React from 'react'
-import { useSelector, useDispatch, useConnct } from './react-hooks-connect'
+import { createState, createDispatch, useConnct } from './react-hooks-redux'
 import { dispatchA, dispatchA1, dispatchAGetData } from './actions'
 
-const mapState = useSelector([state => state.A, state => state.A1], (A, A1) => {
+const mapStateToProps = createState(state => {
   return {
-    A,
-    A1: A1.toJS()
+    A: state.A,
+    A1: state.A1.toJS()
   }
 })
 
-const mapDispatch = useDispatch(dispatch => ({
+const mapDispatchToProps = createDispatch(dispatch => ({
   dispatchA: data => dispatch(dispatchA(data)),
   dispatchA1: data => dispatch(dispatchA1(data)),
   dispatchAGetData: data => dispatch(dispatchAGetData(data))
@@ -43,4 +43,4 @@ function A(props) {
   )
 }
 
-export default useConnct(mapState, mapDispatch)(A)
+export default useConnct(mapStateToProps, mapDispatchToProps)(A)

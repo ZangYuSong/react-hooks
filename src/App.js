@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Provider } from './react-hooks-connect'
+import { Provider } from './react-hooks-redux'
 import * as reducers from './store'
 import A from './A'
 import B from './B'

@@ -1,68 +1,85 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 简介
 
-## Available Scripts
+使用 react-hooks 简单实现类似 redux 的功能。其中包括对异步 action 的处理，使用方式类似 redux-thunk
 
-In the project directory, you can run:
+# 参数说明
 
-### `npm start`
+- Context : 全局共享的 Context
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  ```js
+  import { useContext } from 'react'
+  import { Context } from './react-hooks-redux'
+  const { state, dispatch } = useContext(Context)
+  ```
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+- Provider : 包裹需要共享 state 的所有组件，接收一个 reducer、initState（可选，默认值）、init（可选，默认值的处理函数）
 
-### `npm test`
+  ```js
+  import React from 'react'
+  import { Provider } from './react-hooks-redux'
+  import * as reducers from './store'
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+  function App() {
+    return <Provider reducers={reducers}>children</Provider>
+  }
 
-### `npm run build`
+  // 目前 reducers 支持以下两种写法
+  // 第一种 useReducer 默认写法
+  // 第一种写法需要出入默认值  initState 或者 init
+  function reducer(state, action) {
+    switch (action.type) {
+      case 'AAA':
+        return { ...state, A: action.data }
+      case 'BBB':
+        return { ...state, B: action.data }
+      default:
+        return state
+    }
+  }
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  // 第二种写法
+  // 直接指定默认值，无需指定 initState 或则 init
+  export const A = (state = 1, action) => {
+    if (action.type === 'AAA') {
+      return action.data
+    }
+    return state
+  }
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+  export const B = (state = 2, action) => {
+    if (action.type === 'BBB') {
+      return action.data
+    }
+    return state
+  }
+  ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- createState : 将 state 重新映射，接收一个函数，这个函数接收参数 state，这个函数返回一个新的 state 对象。整个方法返回一个 mapStateToProps 函数
+- createDispatch : 将 dispath 重新映射，接收一个函数，这个函数接收参数 dispath，这个函数返回一个新的 dispath 函数对象。整个方法返回一个 mapDispatchToProps 函数
+- useConnct : 将 mapStateToProps 和 mapDispatchToProps 映射到 props
 
-### `npm run eject`
+  ```js
+  import React from 'react'
+  import { createState, createDispatch, useConnct } from './react-hooks-redux'
+  import { dispatchA, dispatchA1 } from './actions'
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+  const mapStateToProps = createState(state => {
+    return {
+      A: state.A,
+      A1: state.A1.toJS()
+    }
+  })
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  const mapDispatchToProps = createDispatch(dispatch => ({ 
+    dispatchA: data => dispatch(dispatchA(data)),
+    dispatchA1: data => dispatch(dispatchA1(data))
+  }))
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+  function A(props) {
+    const { A, A1, dispatchA, dispatchA1 } = props
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+    return <div>123</div>
+  }
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+  export default useConnct(mapStateToProps, mapDispatchToProps)(A)
+  ```
